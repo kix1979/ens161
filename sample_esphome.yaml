@@ -1,0 +1,55 @@
+esphome:
+  name: [YOUR ESPHOME DEVICE] #YOU MUST CHANGE THIS
+  friendly_name: Air Quality Sensor
+  min_version: 2025.11.0
+  name_add_mac_suffix: false
+
+esp32:
+  variant: esp32
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+# I2C Bus A - for ENS161
+i2c:
+  - id: bus_a
+    sda: GPIO21
+    scl: GPIO22
+    scan: true  # Make sure this is true
+    frequency: 400kHz
+
+sensor:
+  # ENS161 Air Quality Sensor (on bus_a)
+  - platform: ens161
+    i2c_id: bus_a
+    address: 0x53  # Changed from 0x52 to 0x53
+    eco2:
+      name: "eCO2"
+      filters:
+        - sliding_window_moving_average:
+            window_size: 5
+            send_every: 1
+    tvoc:
+      name: "TVOC"
+      filters:
+        - sliding_window_moving_average:
+            window_size: 5
+            send_every: 1
+    aqi:
+      name: "AQI"
+    update_interval: 15s
+
+logger:
+
+api:
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
